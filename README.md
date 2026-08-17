@@ -9,7 +9,11 @@ A dedicated real-time **companion chip** (FPGA IP first, ASIC later) for torque/
 | File | Contents |
 |---|---|
 | [`SUMMARY.md`](SUMMARY.md) | Physics, product thesis, market, competition, customers, risks |
+| [`THESIS_AND_HYPOTHESIS.md`](THESIS_AND_HYPOTHESIS.md) | FPGA-as-evidence thesis; 5–10× hypothesis; ASIC go/no-go exit criteria |
 | [`TECHNICAL_BRIEF.md`](TECHNICAL_BRIEF.md) | Kria FPGA prototype architecture, algorithms, build steps, success criteria |
+| [`docs/PHASE1_IMPLEMENTATION.md`](docs/PHASE1_IMPLEMENTATION.md) | Executable Stage 1 status, data contract, targets, and FPGA handoff |
+| [`docs/AWS_F2.md`](docs/AWS_F2.md) | AWS F2 Vitis build/emulation workflow and measurement boundaries |
+| [`docs/SPI_PROTOCOL.md`](docs/SPI_PROTOCOL.md) | Versioned companion-chip SPI wire format |
 
 ## The problem
 
@@ -43,4 +47,31 @@ See [`TECHNICAL_BRIEF.md`](TECHNICAL_BRIEF.md) for the full build plan.
 
 ## Status
 
-Documentation and technical plan only. FPGA prototype not started.
+**Phase 1 started.** The repository now contains:
+
+- A streaming floating-point complementary-filter reference
+- A saturating Q16.16 model for future HLS/RTL parity
+- Temperature compensation and motor-current torque conversion
+- Deterministic synthetic sensor data, accuracy metrics, and tests
+- A benchmark/vector-export CLI
+- CSV calibration fitting and crossover tuning
+- A tested SPI protocol codec with CRC-16
+- Shared portable Q16.16 HLS compute core
+- Separate Kria embedded and AWS F2 batch-kernel wrappers
+- An XRT host that replays vectors and checks FPGA output against golden values
+
+Run it:
+
+```powershell
+python -m pip install -e ".[dev]"
+python -m pytest
+python -m ftfusion.cli --duration 2 --check
+```
+
+The next target is AWS F2 hardware emulation and hardware compilation. AWS
+currently states that Vitis AFI generation is not supported on F2, so this
+validates synthesis/timing/resources but does not yet execute the custom kernel
+on live FPGA silicon. See
+[`docs/AWS_F2.md`](docs/AWS_F2.md) and
+[`docs/PHASE1_IMPLEMENTATION.md`](docs/PHASE1_IMPLEMENTATION.md) for measured
+software-reference results and explicit measurement boundaries.

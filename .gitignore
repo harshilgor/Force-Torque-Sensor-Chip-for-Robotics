@@ -1,0 +1,27 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+*.egg-info/
+build/
+dist/
+
+# Generated test vectors and benchmark output
+artifacts/
+
+# AMD/Xilinx generated output
+.Xil/
+**/.run/
+**/_x.*/
+**/build_dir.*/
+*.jou
+*.log
+*.str
+*.wdb
+*.xo
+*.xclbin
+*.xclbin.*
+emconfig.json
+xrt.run_summary
+*.xpr.user

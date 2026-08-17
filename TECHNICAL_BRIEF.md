@@ -2,9 +2,22 @@
 
 ## 0. Goal of This Phase
 
-Build a working FPGA prototype on Kria KV260/KR260 that proves: **hardware-accelerated torque/force estimation at higher update rate and lower latency than software fusion on a shared MCU, at comparable or lower power.**
+The current execution target is **AWS EC2 F2 Vitis hardware emulation and
+hardware compilation**, because a physical Kria board is not yet available.
+This cloud stage validates fixed-point parity, synthesis, timing closure,
+initiation interval, and estimated resource cost.
+
+The eventual product-validation goal remains a working Kria KV260/KR260
+prototype that proves: **hardware-accelerated torque/force estimation at higher
+update rate and lower latency than software fusion on a shared MCU, at
+comparable or lower power.**
 
 This artifact validates or kills the business case. Nothing here needs to be production-hardened yet.
+
+AWS batch/DMA timing is not equivalent to physical raw-signal-to-fused-output
+latency. AWS currently documents that Vitis AFI generation is not supported on
+F2, so the current cloud flow must not be represented as live FPGA execution.
+See [`docs/AWS_F2.md`](docs/AWS_F2.md).
 
 ### Success criteria (fill in before coding — these are the benchmark targets)
 
@@ -126,8 +139,11 @@ Use **fixed-point** in the FPGA fabric — much cheaper in area/power than float
 
 ### Step 3 — HDL implementation
 
-- Sensor ingest (ADC read, encoder decode) in Verilog/VHDL or Xilinx HLS.
-- Prefer **HLS from C/C++** for filter math (faster path); hand RTL only where HLS misses latency targets.
+- Keep arithmetic in a shared HLS core with separate wrappers:
+  `hls/aws_f2/` for PCIe batch validation and `hls/kria/` for the later
+  embedded target.
+- AWS F2 uses `m_axi` batch buffers and `s_axilite` controls; it does not model
+  physical ADC, encoder, or SPI pins.
 - Complementary filter first as fixed-point HLS; verify vs. Python on the same logged data.
 - Kalman block next once complementary path is end-to-end.
 
@@ -162,6 +178,7 @@ Document clearly — **this writeup is the pitch** to design partners and invest
 |---|---|
 | **Vitis / Vivado** | Standard Kria flow; Vivado for integration + ADC/encoder blocks |
 | **Vitis HLS** | Filter math (complementary + Kalman) |
+| **AWS F2 Developer Kit / XRT** | Cloud `hw_emu`, hardware compilation, host/DMA validation |
 | **PYNQ** | Early PL bring-up from Python (if available for board variant) |
 | **Python / NumPy** | Offline reference model; post-hoc analysis of logged benchmarks |
 | **Scope / logic analyzer** | Independent latency verification (more credible than internal timestamps alone) |
